@@ -8,6 +8,15 @@ type TokensResponse = {
   refresh_token: string;
 };
 
+type Subscription = {
+  id: string;
+  email: string;
+  subscriptionStatus: string;
+  deliverabilityStatus: string;
+  createdDate: string;
+  updatedDate: string;
+};
+
 const app = express();
 const port = process.env.PORT || 3000;
 const baseUrl = process.env.BASE_URL;
@@ -58,6 +67,75 @@ app.get('/redirect', async (req, res) => {
   wixFinishInstallationUrl.searchParams.set('access_token', accessToken);
 
   res.redirect(wixFinishInstallationUrl.href);
+});
+
+app.post('/subscribe', async (req, res) => {
+  console.log("REQUEST", req.body);
+  const refreshToken = await redisClient.get(req.body.instanceId as string);
+  const email = req.body.email;
+
+  console.log("REFRESH TOKEN", refreshToken)
+
+  const tokensResponse: TokensResponse = await fetch(`${wixApisUrl}/oauth/access`, {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      "grant_type": "refresh_token",
+      "client_id": appId,
+      "client_secret": appSecret,
+      "refresh_token": refreshToken,
+    }),
+  }).then(res => res.json());
+
+  const accessToken = tokensResponse.access_token;
+  console.log("ACCESS TOKEN", accessToken);
+
+  const subscriptionRequest = {
+    subscription: {
+      email,
+      subscriptionStatus: "SUBSCRIBED",
+      deliverabilityStatus: "VALID",
+    },
+  };
+
+  const subscriptionsResponse = await fetch(`${wixApisUrl}/email-marketing/v1/email-subscriptions`, {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json', 'Authorization': accessToken },
+    body: JSON.stringify(subscriptionRequest),
+  }).then(res => res.json());
+
+  res.json(subscriptionsResponse);
+});
+
+app.get('/subscriptions', async (req, res) => {
+  console.log("INSTANCE ID", req.query.instanceId);
+  const refreshToken = await redisClient.get(req.query.instanceId as string);
+
+  console.log("REFRESH TOKEN", refreshToken)
+
+  const tokensResponse: TokensResponse = await fetch(`${wixApisUrl}/oauth/access`, {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      "grant_type": "refresh_token",
+      "client_id": appId,
+      "client_secret": appSecret,
+      "refresh_token": refreshToken,
+    }),
+  }).then(res => res.json());
+
+  const accessToken = tokensResponse.access_token;
+  console.log("ACCESS TOKEN", accessToken);
+
+  const subscriptionsResponse = await fetch(`${wixApisUrl}/email-marketing/v1/email-subscriptions/query`, {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json', 'Authorization': accessToken },
+    body: JSON.stringify({
+      filters: {},
+    }),
+  }).then(res => res.json());
+
+  res.json(subscriptionsResponse);
 });
 
 app.listen(port, () => {

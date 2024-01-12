@@ -42,32 +42,43 @@ const thankYouHtml = `
 class SubscribeForm extends HTMLElement {
   constructor() {
     super();
-
     this.attachShadow({ mode: 'open' });
+  };
 
+  connecedCallback() {
     this.shadowRoot.innerHTML = `
       ${styles}
       ${formHtml}
     `;
 
     this.shadowRoot.getElementById('subscribeBtn').addEventListener('click', () => this.subscribe());
-  }
+  };
 
   async subscribe() {
+    const wixConfig = JSON.parse(this.getAttribute('wixconfig') || '{}');
     const emailInput = this.shadowRoot.getElementById('email');
     const email = emailInput.value;
 
+    console.log("WIX CONFIG", wixConfig);
+
     if (email) {
-      await fetch('https://jsonplaceholder.typicode.com/todos/1')
-        .then(response => response.json())
-        .then(json => console.log(json))
+      const subResponse = await fetch(`https://my-app-backend-br8l.onrender.com/subscribe`, {
+        method: 'post',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instanceId: wixConfig.instanceId,
+          email,
+        }),
+      }).then(res => res.json());
+
+      console.log("SUB RESPONSE", subResponse);
 
       this.shadowRoot.innerHTML = `
         ${styles}
         ${thankYouHtml}
       `
-    }
-  }
-}
+    };
+  };
+};
 
 customElements.define('subscribe-form', SubscribeForm);
