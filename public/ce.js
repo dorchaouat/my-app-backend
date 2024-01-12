@@ -5,6 +5,7 @@ const styles = `
       max-width: 300px;
       margin: auto;
       font-family: 'Roboto', sans-serif;
+      font-size: 12px;
     }
 
     h2 {
@@ -18,7 +19,6 @@ const styles = `
     }
 
     button {
-      font-size: 12px;
       padding: 8px 12px;
       cursor: pointer;
     }
@@ -54,7 +54,6 @@ class SubscribeForm extends HTMLElement {
     `;
 
     this.shadowRoot.getElementById('subscribeBtn').addEventListener('click', () => this.subscribe());
-    // this.shadowRoot.getElementById('getSubscriptions').addEventListener('click', () => this.getSubscriptions());
   };
 
   async subscribe() {
@@ -62,10 +61,8 @@ class SubscribeForm extends HTMLElement {
     const emailInput = this.shadowRoot.getElementById('email');
     const email = emailInput.value;
 
-    console.log("WIX CONFIG", wixConfig);
-
     if (email) {
-      const subResponse = await fetch(`https://my-app-backend-br8l.onrender.com/subscribe`, {
+      await fetch(`https://my-app-backend-br8l.onrender.com/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,22 +71,11 @@ class SubscribeForm extends HTMLElement {
         }),
       }).then(res => res.json());
 
-      console.log("SUB RESPONSE", subResponse);
-
       this.shadowRoot.innerHTML = `
         ${styles}
         ${thankYouHtml}
       `
     };
-  };
-
-  async getSubscriptions() {
-    const wixConfig = JSON.parse(this.getAttribute('wixconfig') || '{}');
-    console.log("WIX CONFIG", wixConfig);
-
-    const subResponse = await fetch(`https://my-app-backend-br8l.onrender.com/subscriptions?instanceId=32a1ff5d-2934-4505-aae4-02b95f88a093`).then(res => res.json());
-
-    console.log("SUB RESPONSE", subResponse);
   };
 };
 
