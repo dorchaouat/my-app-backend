@@ -10,7 +10,7 @@ type TokensResponse = {
 const app = express();
 const port = process.env.PORT || 3000;
 const baseUrl = process.env.BASE_URL;
-const redisClient = new Redis(process.env.REDIS_URL || '');
+const redisClient = new Redis(process.env.STORE_URL || '');
 
 const appId = process.env.APP_ID;
 const appSecret = process.env.APP_SECRET;
