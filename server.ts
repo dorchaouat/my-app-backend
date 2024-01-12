@@ -135,7 +135,7 @@ app.get('/subscriptions', async (req, res) => {
     method: 'post',
     headers: { 'Content-Type': 'application/json', 'Authorization': accessToken },
     body: JSON.stringify({
-      filters: {},
+      filter: {},
     }),
   }).then(res => res.json());
 
