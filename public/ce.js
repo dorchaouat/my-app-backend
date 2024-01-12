@@ -8,7 +8,7 @@ const styles = `
     }
 
     h2 {
-      font-size: 1.2em;
+      font-size: 18px;
     }
 
     input {
@@ -18,6 +18,7 @@ const styles = `
     }
 
     button {
+      font-size: 12px;
       padding: 8px 12px;
       cursor: pointer;
     }
@@ -30,7 +31,6 @@ const formHtml = `
     <label for="email">Email:</label>
     <input type="email" id="email" required>
     <button id="subscribeBtn">Subscribe</button>
-    <button id="getSubscriptions">Get</button>
   </div>
 `;
 
@@ -54,7 +54,7 @@ class SubscribeForm extends HTMLElement {
     `;
 
     this.shadowRoot.getElementById('subscribeBtn').addEventListener('click', () => this.subscribe());
-    this.shadowRoot.getElementById('getSubscriptions').addEventListener('click', () => this.getSubscriptions());
+    // this.shadowRoot.getElementById('getSubscriptions').addEventListener('click', () => this.getSubscriptions());
   };
 
   async subscribe() {
