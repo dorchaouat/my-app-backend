@@ -1,6 +1,7 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import path from 'path';
+import cors from 'cors';
 import Redis from 'ioredis';
 
 type TokensResponse = {
@@ -27,6 +28,7 @@ const appSecret = process.env.APP_SECRET;
 const wixInstallerUrl = 'https://www.wix.com/installer';
 const wixApisUrl = 'https://www.wixapis.com';
 
+app.use(cors());
 app.use(express.static(path.resolve(__dirname, '../public')));
 
 app.get('/', (req, res) => {
