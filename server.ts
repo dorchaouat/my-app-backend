@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 
 app.get('/app', (req, res) => {
   const wixToken = req.query.token as string;
-  const wixConsentUrl = new URL('/install', wixInstallerUrl);
+  const wixConsentUrl = new URL(`${wixInstallerUrl}/install`);
 
   wixConsentUrl.searchParams.set('token', wixToken);
   wixConsentUrl.searchParams.set('appId', appId);
@@ -54,7 +54,7 @@ app.get('/redirect', async (req, res) => {
 
   await redisClient.set(req.query.instanceId as string, refreshToken);
 
-  const wixFinishInstallationUrl = new URL('/close-window', wixInstallerUrl);
+  const wixFinishInstallationUrl = new URL(`${wixInstallerUrl}/close-window`);
   wixFinishInstallationUrl.searchParams.set('access_token', accessToken);
 
   res.redirect(wixFinishInstallationUrl.href);
