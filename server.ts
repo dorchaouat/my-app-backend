@@ -2,21 +2,11 @@ import express from 'express';
 import fetch from 'node-fetch';
 import path from 'path';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import Redis from 'ioredis';
 
 type TokensResponse = {
   access_token: string;
   refresh_token: string;
-};
-
-type Subscription = {
-  id: string;
-  email: string;
-  subscriptionStatus: string;
-  deliverabilityStatus: string;
-  createdDate: string;
-  updatedDate: string;
 };
 
 const app = express();
@@ -74,11 +64,8 @@ app.get('/redirect', async (req, res) => {
 });
 
 app.post('/subscribe', async (req, res) => {
-  console.log("REQUEST", req.body);
   const refreshToken = await redisClient.get(req.body.instanceId as string);
   const email = req.body.email;
-
-  console.log("REFRESH TOKEN", refreshToken)
 
   const tokensResponse: TokensResponse = await fetch(`${wixApisUrl}/oauth/access`, {
     method: 'post',
@@ -92,7 +79,6 @@ app.post('/subscribe', async (req, res) => {
   }).then(res => res.json());
 
   const accessToken = tokensResponse.access_token;
-  console.log("ACCESS TOKEN", accessToken);
 
   const subscriptionRequest = {
     subscription: {
@@ -112,10 +98,7 @@ app.post('/subscribe', async (req, res) => {
 });
 
 app.get('/subscriptions', async (req, res) => {
-  console.log("INSTANCE ID", req.query.instanceId);
   const refreshToken = await redisClient.get(req.query.instanceId as string);
-
-  console.log("REFRESH TOKEN", refreshToken)
 
   const tokensResponse: TokensResponse = await fetch(`${wixApisUrl}/oauth/access`, {
     method: 'post',
@@ -129,7 +112,6 @@ app.get('/subscriptions', async (req, res) => {
   }).then(res => res.json());
 
   const accessToken = tokensResponse.access_token;
-  console.log("ACCESS TOKEN", accessToken);
 
   const subscriptionsResponse = await fetch(`${wixApisUrl}/email-marketing/v1/email-subscriptions/query`, {
     method: 'post',
