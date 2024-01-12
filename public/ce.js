@@ -4,6 +4,7 @@ const styles = `
       display: block;
       max-width: 300px;
       margin: auto;
+      font-family: 'Roboto', sans-serif;
     }
 
     h2 {
@@ -45,7 +46,7 @@ class SubscribeForm extends HTMLElement {
     this.attachShadow({ mode: 'open' });
   };
 
-  connecedCallback() {
+  connectedCallback() {
     this.shadowRoot.innerHTML = `
       ${styles}
       ${formHtml}
