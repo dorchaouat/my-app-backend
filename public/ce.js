@@ -30,6 +30,7 @@ const formHtml = `
     <label for="email">Email:</label>
     <input type="email" id="email" required>
     <button id="subscribeBtn">Subscribe</button>
+    <button id="getSubscriptions">Get</button>
   </div>
 `;
 
@@ -53,6 +54,7 @@ class SubscribeForm extends HTMLElement {
     `;
 
     this.shadowRoot.getElementById('subscribeBtn').addEventListener('click', () => this.subscribe());
+    this.shadowRoot.getElementById('getSubscriptions').addEventListener('click', () => this.getSubscriptions());
   };
 
   async subscribe() {
@@ -64,7 +66,7 @@ class SubscribeForm extends HTMLElement {
 
     if (email) {
       const subResponse = await fetch(`https://my-app-backend-br8l.onrender.com/subscribe`, {
-        method: 'post',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           instanceId: wixConfig.instanceId,
@@ -79,6 +81,15 @@ class SubscribeForm extends HTMLElement {
         ${thankYouHtml}
       `
     };
+  };
+
+  async getSubscriptions() {
+    const wixConfig = JSON.parse(this.getAttribute('wixconfig') || '{}');
+    console.log("WIX CONFIG", wixConfig);
+
+    const subResponse = await fetch(`https://my-app-backend-br8l.onrender.com/subscriptions?instanceId=32a1ff5d-2934-4505-aae4-02b95f88a093`).then(res => res.json());
+
+    console.log("SUB RESPONSE", subResponse);
   };
 };
 
