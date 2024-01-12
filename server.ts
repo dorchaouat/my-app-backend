@@ -1,5 +1,6 @@
 import express from 'express';
 import fetch from 'node-fetch';
+import path from 'path';
 import Redis from 'ioredis';
 
 type TokensResponse = {
@@ -16,6 +17,8 @@ const appId = process.env.APP_ID;
 const appSecret = process.env.APP_SECRET;
 const wixInstallerUrl = 'https://www.wix.com/installer';
 const wixApisUrl = 'https://www.wixapis.com';
+
+app.use(express.static(path.resolve(__dirname, '../public')));
 
 app.get('/', (req, res) => {
   res.send('Hello from server');
