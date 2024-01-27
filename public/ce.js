@@ -1,36 +1,63 @@
 const styles = `
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     :host {
       display: block;
-      max-width: 300px;
+      max-width: 400px;
       margin: auto;
       font-family: 'Roboto', sans-serif;
-      font-size: 12px;
+      font-size: 14px;
+      padding: 28px;
     }
 
     h2 {
       font-size: 18px;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: inline-block;
+      margin-bottom: 8px;
     }
 
     input {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
+      width: 66%;
+      padding: 12px;
     }
 
     button {
+      background: #3845db;
+      color: white;
       padding: 8px 12px;
+      border: none;
       cursor: pointer;
+      width: 33%;
+    }
+
+    .required::after {
+      content: ' *'
+    }
+
+    #formInput {
+      display: flex;
+      gap: 8px;
     }
   </style>
 `;
 
 const formHtml = `
-  <div id="subscribeForm">
-    <h2>Subscribe</h2>
-    <label for="email">Email:</label>
-    <input type="email" id="email" required>
-    <button id="subscribeBtn">Subscribe</button>
+  <div>
+    <h2>Leave your email and join our mailing list</h2>
+    <label for="email" class="required">Your Email Address:</label>
+    <div id="formInput">
+      <input type="email" id="email" placeholder="Enter your email" required>
+      <button id="subscribeBtn">Subscribe</button>
+    </div>
   </div>
 `;
 
@@ -69,7 +96,7 @@ class SubscribeForm extends HTMLElement {
           instanceId: wixConfig.instanceId,
           email,
         }),
-      }).then(res => res.json());
+      });
 
       this.shadowRoot.innerHTML = `
         ${styles}
