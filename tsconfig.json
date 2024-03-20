@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "NodeNext",
     "esModuleInterop": true,
     "outDir": "./dist",
     "skipLibCheck": true,
