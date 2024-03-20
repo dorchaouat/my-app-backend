@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(express.static(path.resolve(__dirname, '../public')));
 
 app.get('/', (req, res) => {
+  console.log("Well hellog there");
   res.send('Hello from server');
 });
 
