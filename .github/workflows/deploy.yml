@@ -35,5 +35,5 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: "cool-starling-21"
-          entrypoint: "index.js" # 📝 Update the entrypoint if necessary
+          entrypoint: "server.js" # 📝 Update the entrypoint if necessary
           root: "./dist" # 📝 Update the root if necessary
