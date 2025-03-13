@@ -29,7 +29,7 @@ app.post("/write_file", async (req, res) => {
   const { path, content } = req.body;
   console.log("GOT REQ", { path, content });
   try {
-    await fs.writeFile(path, content, "utf-8");
+    await fs.writeFile(`tmp/${path}`, content, "utf-8");
     res.json({ message: `Successfully wrote to file ${path}` });
   } catch (error) {
     console.log(error);
@@ -40,7 +40,7 @@ app.post("/write_file", async (req, res) => {
 app.post("/edit_file", async (req, res) => {
   const { path, edits, dryRun = false } = req.body;
   try {
-    const content = await fs.readFile(path, "utf-8");
+    const content = await fs.readFile(`tmp/${path}`, "utf-8");
     let modifiedContent = content;
 
     edits.forEach(({ oldText, newText }) => {
@@ -63,7 +63,7 @@ app.post("/edit_file", async (req, res) => {
 app.post("/get_file_info", async (req, res) => {
   const { path } = req.body;
   try {
-    const stats = await fs.stat(path);
+    const stats = await fs.stat(`tmp/${path}`);
     res.json({
       size: stats.size,
       created: stats.birthtime,
