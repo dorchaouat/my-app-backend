@@ -18,7 +18,7 @@ app.get("/hello", async (req, res) => {
 app.post("/read_file", async (req, res) => {
   const { path } = req.body;
   try {
-    const content = await fs.readFile(path, "utf-8");
+    const content = await fs.readFile(`tmp/${path}`, "utf-8");
     res.json({ content });
   } catch (error) {
     res.status(500).json({ error: error.message });
