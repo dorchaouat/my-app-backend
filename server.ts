@@ -1,129 +1,115 @@
-import express from 'express';
-// import fetch from 'node-fetch';
-// import path from 'path';
-// import cors from 'cors';
-// import Redis from 'ioredis';
-
-// type TokensResponse = {
-//   access_token: string;
-//   refresh_token: string;
-// };
+import express from "express";
+import { spawn, exec } from "child_process";
+import { promisify } from "util";
+import { homedir } from "os";
+import cors from 'cors';
+import path from "path";
+import fs from "fs/promises";
 
 const app = express();
-const port = process.env.PORT || 3000;
-// const baseUrl = process.env.BASE_URL;
-// const redisClient = new Redis(process.env.STORE_URL || '');
+const port = process.env.PORT || 8000;
 
-// const appId = process.env.APP_ID;
-// const appSecret = process.env.APP_SECRET;
-// const wixInstallerUrl = 'https://www.wix.com/installer';
-// const wixApisUrl = 'https://www.wixapis.com';
-
-// app.use(cors());
-// app.use(express.json());
-// app.use(express.static(path.resolve(__dirname, '../public')));
-
-app.get('/', (req, res) => {
-  console.log("Well hellog there");
-  res.send('Hello from server');
+app.post("/read_file", async (req, res) => {
+  const { path } = req.body;
+  try {
+    const content = await fs.readFile(path, "utf-8");
+    res.json({ content });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// app.get('/app', (req, res) => {
-//   const wixToken = req.query.token as string;
-//   const wixConsentUrl = new URL(`${wixInstallerUrl}/install`);
+app.post("/write_file", async (req, res) => {
+  const { path, content } = req.body;
+  console.log("GOT REQ", { path, content });
+  try {
+    await fs.writeFile(path, content, "utf-8");
+    res.json({ message: `Successfully wrote to file ${path}` });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: error.message });
+  }
+});
 
-//   wixConsentUrl.searchParams.set('token', wixToken);
-//   wixConsentUrl.searchParams.set('appId', appId);
-//   wixConsentUrl.searchParams.set('redirectUrl', `${baseUrl}/redirect`);
+app.post("/edit_file", async (req, res) => {
+  const { path, edits, dryRun = false } = req.body;
+  try {
+    const content = await fs.readFile(path, "utf-8");
+    let modifiedContent = content;
 
-//   res.redirect(wixConsentUrl.href);
-// });
+    edits.forEach(({ oldText, newText }) => {
+      modifiedContent = modifiedContent.split(oldText).join(newText);
+    });
 
-// app.get('/redirect', async (req, res) => {
-//   const wixCode = req.query.code;
+    if (!dryRun) {
+      await fs.writeFile(path, modifiedContent, "utf-8");
+    }
 
-//   const tokensResponse: TokensResponse = await fetch(`${wixApisUrl}/oauth/access`, {
-//     method: 'post',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({
-//       "grant_type": "authorization_code",
-//       "client_id": appId,
-//       "client_secret": appSecret,
-//       "code": wixCode,
-//     }),
-//   }).then(res => res.json());
+    res.json({
+      message: dryRun ? "Diff preview generated." : "File edited successfully.",
+      content: modifiedContent,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-//   const refreshToken = tokensResponse.refresh_token;
-//   const accessToken = tokensResponse.access_token;
+app.post("/get_file_info", async (req, res) => {
+  const { path } = req.body;
+  try {
+    const stats = await fs.stat(path);
+    res.json({
+      size: stats.size,
+      created: stats.birthtime,
+      modified: stats.mtime,
+      permissions: stats.mode,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-//   await redisClient.set(req.query.instanceId as string, refreshToken);
+app.get("/list_allowed_directories", (req, res) => {
+  res.json({ allowedDirectories: [homedir()] });
+});
 
-//   const wixFinishInstallationUrl = new URL(`${wixInstallerUrl}/close-window`);
-//   wixFinishInstallationUrl.searchParams.set('access_token', accessToken);
+app.post("/run_command", async (req, res) => {
+  const { command } = req.body;
+  try {
+    console.log(`Executing command: ${command}`);
+    const { stdout, stderr } = await promisify(exec)(command);
 
-//   res.redirect(wixFinishInstallationUrl.href);
-// });
+    if (stderr) {
+      console.error(`stderr: ${stderr}`);
+    }
+    res.json({
+      stdout: stdout.trim(),
+      stderr: stderr.trim(),
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: `Execution failed: ${JSON.stringify(error)}` });
+  }
+});
 
-// app.post('/subscribe', async (req, res) => {
-//   const refreshToken = await redisClient.get(req.body.instanceId as string);
-//   const email = req.body.email;
+app.post("/run_command_stream", (req, res) => {
+  const { command } = req.body;
+  const childProcess = spawn(command, { shell: true });
+  let output = "";
 
-//   const tokensResponse: TokensResponse = await fetch(`${wixApisUrl}/oauth/access`, {
-//     method: 'post',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({
-//       "grant_type": "refresh_token",
-//       "client_id": appId,
-//       "client_secret": appSecret,
-//       "refresh_token": refreshToken,
-//     }),
-//   }).then(res => res.json());
+  childProcess.stdout.on("data", (data) => {
+    output += data.toString();
+  });
 
-//   const accessToken = tokensResponse.access_token;
+  childProcess.stderr.on("data", (data) => {
+    output += data.toString();
+  });
 
-//   const subscriptionRequest = {
-//     subscription: {
-//       email,
-//       subscriptionStatus: "SUBSCRIBED",
-//       deliverabilityStatus: "VALID",
-//     },
-//   };
-
-//   const subscriptionsResponse = await fetch(`${wixApisUrl}/email-marketing/v1/email-subscriptions`, {
-//     method: 'post',
-//     headers: { 'Content-Type': 'application/json', 'Authorization': accessToken },
-//     body: JSON.stringify(subscriptionRequest),
-//   }).then(res => res.json());
-
-//   res.json(subscriptionsResponse);
-// });
-
-// app.get('/subscriptions', async (req, res) => {
-//   const refreshToken = await redisClient.get(req.query.instanceId as string);
-
-//   const tokensResponse: TokensResponse = await fetch(`${wixApisUrl}/oauth/access`, {
-//     method: 'post',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({
-//       "grant_type": "refresh_token",
-//       "client_id": appId,
-//       "client_secret": appSecret,
-//       "refresh_token": refreshToken,
-//     }),
-//   }).then(res => res.json());
-
-//   const accessToken = tokensResponse.access_token;
-
-//   const subscriptionsResponse = await fetch(`${wixApisUrl}/email-marketing/v1/email-subscriptions/query`, {
-//     method: 'post',
-//     headers: { 'Content-Type': 'application/json', 'Authorization': accessToken },
-//     body: JSON.stringify({
-//       filter: {},
-//     }),
-//   }).then(res => res.json());
-
-//   res.json(subscriptionsResponse);
-// });
+  childProcess.on("close", (code) => {
+    res.json({ message: `Exit code ${code}:\n${output}` });
+  });
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
