@@ -11,6 +11,10 @@ const port = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
+app.post("/hello", async (req, res) => {
+  res.json({ message: "very much hello" });
+});
+
 app.post("/read_file", async (req, res) => {
   const { path } = req.body;
   try {
