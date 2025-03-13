@@ -2,12 +2,14 @@ import express from "express";
 import { spawn, exec } from "child_process";
 import { promisify } from "util";
 import { homedir } from "os";
-import cors from 'cors';
-import path from "path";
+import cors from "cors";
 import fs from "fs/promises";
 
 const app = express();
 const port = process.env.PORT || 8000;
+
+app.use(cors());
+app.use(express.json());
 
 app.post("/read_file", async (req, res) => {
   const { path } = req.body;
@@ -26,7 +28,7 @@ app.post("/write_file", async (req, res) => {
     await fs.writeFile(path, content, "utf-8");
     res.json({ message: `Successfully wrote to file ${path}` });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 });
